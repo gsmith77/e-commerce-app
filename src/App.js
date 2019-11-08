@@ -1,48 +1,48 @@
-import React from 'react';
-import './App.css';
+import React, { Component } from 'react';
 import Products from './components/Products';
+import Filter from './components/Filter';
+import Basket from './components/Basket'
+import {Provider} from 'react-redux'
+import store from './store'
+import './App.css';
 
-export default class App extends React.Component {
+class App extends Component {
 
-  constructor(props){
-    super(props)
-    this.state = {
-      products: [],
-      filteredProducts: []
+  componentWillMount() {
+
+    if (localStorage.getItem('cartItems')) {
+      this.setState({ cartItems: JSON.parse(localStorage.getItem('cartItems')) });
     }
+
+    fetch('http://localhost:8000/products').then(res => res.json())
+      .catch(err => fetch('db.json').then(res => res.json()).then(data => data.products))
+      .then(data => {
+        this.setState({ products: data });
+      });
   }
 
-  componentWillMount(){
-    fetch('http://localhost:8000/products')
-    .then(resp => resp.json())
-    .then(products => {
-      this.setState({
-        products: products,
-        filteredProducts: products
-      })
-    })
-  }
-
-  handleAddToCart(){
-
-
-  }
-
-
-  render(){
+  render() {
     return (
+      <Provider store={store}>
       <div className="container">
-        <h1>Ecommerce Shopping Application</h1>
-        <br/>
+        <h1>E-commerce Shopping Cart Application</h1>
+        <hr />
         <div className="row">
-          <div className="col-md-8">
-            <Products products={this.state.filteredProducts} handleAddToCart={this.handleAddToCart()}/>
+          <div className="col-md-9">
+            <Filter/>
+            <hr />
+            <Products products={this.state.filteredProducts} handleAddToCart={this.handleAddToCart} />
           </div>
-          <div className="col-md-4">
-  
+          <div className="col-md-3">
+            <Basket cartItems={this.state.cartItems} handleRemoveFromCart={this.handleRemoveFromCart} />
           </div>
+
         </div>
+
       </div>
+      </Provider>
     );
   }
 }
+
+export default App;
